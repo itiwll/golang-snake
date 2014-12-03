@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>贪吃蛇</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        #mainCanvas{
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #info {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<canvas id="mainCanvas"></canvas>
+<div id="info">
+       <p><label for="">你的名字<input type="text" /></label></p>
+       <p><span>你的id：{{.}}</span></p>
+       <p>连接信息：<span id="connectInfo"></span></p>
+   </div>
+   <script type="text/javascript" src="/public/main.js"></script>
+</body>
+</html>
