@@ -174,7 +174,7 @@ func collide(Snakes []*snake) {
 		head := s1.Body[len(s1.Body)-1] // 头
 
 		// 超出地图
-		if head[0] >= width || head[0] <= startX || head[1] >= height || head[1] <= startY {
+		if head[0] >= width-1 || head[0] <= startX || head[1] >= height-1 || head[1] <= startY {
 			s1.die()
 			continue
 		}
