@@ -86,12 +86,22 @@
 
     // 绘图方法
     function draw(data) {
+        ctx.lineWidth = 1;
+
         // 清除画布
         ctx.clearRect(0, 0, w, h);
 
+        // 绘制地地图边框
+        var Map = data.Map;
+        for (var i = 0; i < Map.length; i++) {
+            Map[i] = Map[i]*bodyW;
+        };
+
+        ctx.strokeRect(Map[0]-bodyW,Map[1]-bodyW,Map[2]+bodyW,Map[3]+bodyW);
+        
+
         // 绘制蛇
         var Snakes = data.Snakes;
-        ctx.beginPath();
         ctx.fillStyle = "#000";
         ctx.strokeStyle = "#000";
         for (var i = Snakes.length - 1; i >= 0; i--) {

@@ -25,7 +25,7 @@ var (
 
 func main() {
 
-	var port = flag.String("port", "80", "服务端口，默认80")
+	var port = flag.String("port", "89", "服务端口，默认89")
 	flag.Parse()
 
 	// 静态文件
@@ -167,11 +167,17 @@ func snakeDo() {
 func collide(Snakes []*snake) {
 	// 遍历蛇库
 	for i, s1 := range Snakes {
-		// 蛇的
+		// 蛇的状态
 		if s1.Staust != 1 {
 			continue
 		}
 		head := s1.Body[len(s1.Body)-1] // 头
+
+		// 超出地图
+		if head[0] >= width || head[0] <= startX || head[1] >= height || head[1] <= startY {
+			s1.die()
+			continue
+		}
 	H:
 		for j, s2 := range Snakes {
 			for k, unit := range s2.Body {
@@ -192,9 +198,11 @@ func writer() {
 	var json struct {
 		Snakes []*snake
 		Foods  fooder
+		Map    [4]int
 	}
 	json.Snakes = Snakes
 	json.Foods = foods
+	json.Map = [4]int{0, 0, width, height}
 	// fmt.Println("传送数据")
 	for _, v := range conns {
 		v.WriteJSON(&json)
