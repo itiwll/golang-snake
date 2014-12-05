@@ -2,7 +2,7 @@
 * @Author: itiwll
 * @Date:   2014-12-02 09:20:22
 * @Last Modified by:   itiwll
-* @Last Modified time: 2014-12-02 13:57:16
+* @Last Modified time: 2014-12-05 10:28:19
  */
 
 package main
@@ -22,10 +22,10 @@ func (f *fooder) setQuantity(n int) {
 	f.quantity = n
 }
 
-func (f *fooder) produceFood(startX int, startY int, widthX int, widthY int, Snakes []*snake) {
+func (f *fooder) produceFood(gameMap maper, Snakes []*snake) {
 S:
-	x := randValue(startX, widthX)
-	y := randValue(startY, widthY)
+	x := randValue(0, gameMap.Width)
+	y := randValue(0, gameMap.Height)
 
 	for _, v := range Snakes {
 		for _, vv := range v.Body {

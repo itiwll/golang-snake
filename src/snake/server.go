@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"html/template"
@@ -11,22 +10,31 @@ import (
 	"time"
 )
 
+// 地图类型
+type maper struct {
+	Width  int
+	Height int
+}
+
 var (
-	userIds    []int
-	Snakes     []*snake                                                      //蛇库
-	conns      map[string]*websocket.Conn = make(map[string]*websocket.Conn) //连接库
-	foods      fooder                                                        //食物库
-	startX     int                        = 0
-	startY     int                        = 0
-	width      int                        = 100
-	height     int                        = 80
-	tickerTime int64                      = 100
+	userIds []int
+	Snakes  []*snake                                                      //蛇库
+	conns   map[string]*websocket.Conn = make(map[string]*websocket.Conn) //连接库
+	foods   fooder                                                        //食物库
+	gameMap maper                                                         // 地图
+	config  struct {                   // 设置
+		port       string
+		tickerTime int
+	}
 )
 
 func main() {
 
-	var port = flag.String("port", "89", "服务端口，默认89")
-	flag.Parse()
+	gameMap.Width = 100
+	gameMap.Height = 50
+
+	config.port = "89"
+	config.tickerTime = 500
 
 	// 静态文件
 	http.Handle("/public/", http.FileServer(http.Dir("static")))
@@ -41,7 +49,7 @@ func main() {
 	go game()
 
 	// 启动
-	log.Fatal(http.ListenAndServe(":"+*port, nil))
+	log.Fatal(http.ListenAndServe(":"+config.port, nil))
 
 }
 
@@ -104,6 +112,7 @@ func websocketServer(rw http.ResponseWriter, req *http.Request) {
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024}
 	conn, _ := ug.Upgrade(rw, req, nil)
+	defer fmt.Println("用户" + cookit.Value + "断开连接")
 	defer conn.Close()
 	defer Snakes[uid].die()
 	if conn != nil {
@@ -123,7 +132,10 @@ func websocketServer(rw http.ResponseWriter, req *http.Request) {
 		fmt.Println(string(p))
 		if t == websocket.TextMessage {
 			switch string(p) {
-			case "1", "2", "3", "4":
+			case "getMap": // 地图请求
+				writerMap(conn)
+
+			case "1", "2", "3", "4": // 移动请求
 				fmt.Println("收到操作 id:" + cookit.Value + ";value:" + string(p))
 				i, _ := strconv.Atoi(cookit.Value)
 				s := Snakes[i]
@@ -136,15 +148,15 @@ func websocketServer(rw http.ResponseWriter, req *http.Request) {
 // 游戏服务
 func game() {
 	fmt.Println("游戏服务启动")
-	foods.produceFood(startX, startY, width, height, Snakes)
-	foods.produceFood(startX, startY, width, height, Snakes)
-	runTicker := time.NewTicker(time.Duration(tickerTime) * time.Millisecond)
+	foods.produceFood(gameMap, Snakes) // 生成食物
+	foods.produceFood(gameMap, Snakes)
+	runTicker := time.NewTicker(time.Duration(config.tickerTime) * time.Millisecond)
 	for {
 		select {
 		case <-runTicker.C:
-			snakeDo()       // 动
-			collide(Snakes) // 计算碰撞
-			go writer()     // 向客户端传送数据
+			snakeDo()            // 动
+			collide(Snakes)      // 计算碰撞
+			go writerSnakeFood() // 向客户端传送数据
 		}
 	}
 }
@@ -158,7 +170,7 @@ func snakeDo() {
 		}
 		if v.Move(&foods) {
 			fmt.Println("生成食物")
-			foods.produceFood(startX, startY, width, height, Snakes)
+			foods.produceFood(gameMap, Snakes)
 		}
 	}
 }
@@ -173,10 +185,9 @@ func collide(Snakes []*snake) {
 		}
 		head := s1.Body[len(s1.Body)-1] // 头
 
-		// 超出地图
-		if head[0] >= width-1 || head[0] <= startX || head[1] >= height-1 || head[1] <= startY {
+		if head[0] <= 0 || head[1] <= 0 || head[0] > gameMap.Width || head[1] > gameMap.Height {
+			fmt.Println("撞墙死掉了")
 			s1.die()
-			continue
 		}
 	H:
 		for j, s2 := range Snakes {
@@ -193,18 +204,30 @@ func collide(Snakes []*snake) {
 	}
 }
 
-// 写到客户端
-func writer() {
+// 写到客户端 蛇库和食物库
+func writerSnakeFood() {
 	var json struct {
+		Type   string
 		Snakes []*snake
 		Foods  fooder
-		Map    [4]int
 	}
+	json.Type = "s&f"
 	json.Snakes = Snakes
 	json.Foods = foods
-	json.Map = [4]int{0, 0, width, height}
 	// fmt.Println("传送数据")
 	for _, v := range conns {
 		v.WriteJSON(&json)
 	}
+}
+
+// 写到客户端 地图
+
+func writerMap(c *websocket.Conn) {
+	var json struct {
+		Type string
+		Map  maper
+	}
+	json.Type = "map"
+	json.Map = gameMap
+	c.WriteJSON(json)
 }

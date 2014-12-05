@@ -1,35 +1,46 @@
 // main.js
 (function() {
-    var bodyW = 5;
+    var bodyW = 4,
+        gap = 1,
+        mapW,
+        mapH,
+        start = false;
+
 
 
     var connectInfoEl = document.getElementById('connectInfo'),
         canvasEl = document.getElementById('mainCanvas'),
-        ctx = canvasEl.getContext("2d"),
-        w = canvasEl.offsetWidth,
-        h = canvasEl.offsetHeight;
+        ctx = canvasEl.getContext("2d");
 
-    // 选择画布大小
-    if (w > 1000) {
-        canvasEl.width = w = w / 2;
-        canvasEl.height = h = h / 2;
-    } else {
-        canvasEl.width = w;
-        canvasEl.height = h;
-    }
 
     // 连接
     var connect = new WebSocket("ws://" + location.host + "/ws");
     connect.onopen = function() {
         connectInfoEl.innerHTML = "已连接websocket";
+        this.send("getMap"); // 获取地图
     }
     connect.onclose = function() {
         connectInfoEl.innerHTML = "连接已断开";
     }
+
+    // 获取数据
     connect.onmessage = function(e) {
         connectInfoEl.innerHTML = e.data;
-        // 绘图
-        draw(JSON.parse(e.data))
+
+        var data = JSON.parse(e.data)
+        
+        switch (data.Type){
+            case "s&f":
+                // 绘蛇和食物
+                drawSnakeFood(data);
+                break;
+            
+            case "map":
+                setMap(data);
+                start = true;
+                break;
+        }
+        
     }
 
     // 按键
@@ -81,29 +92,19 @@
                 if (startY>endY) {connect.send(1)} else{connect.send(3)};
             }
         }
-
     })();
 
     // 绘图方法
-    function draw(data) {
-        ctx.lineWidth = 1;
-
-        // 清除画布
-        ctx.clearRect(0, 0, w, h);
-
-        // 绘制地地图边框
-        var Map = data.Map;
-        for (var i = 0; i < Map.length; i++) {
-            Map[i] = Map[i]*bodyW;
+    function drawSnakeFood(data) {
+        if (!start) {
+            return;
         };
-
-        ctx.strokeRect(Map[0]-bodyW,Map[1]-bodyW,Map[2]+bodyW,Map[3]+bodyW);
-        
+        // 清除画布
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
 
         // 绘制蛇
         var Snakes = data.Snakes;
         ctx.fillStyle = "#000";
-        ctx.strokeStyle = "#000";
         for (var i = Snakes.length - 1; i >= 0; i--) {
             var snake = Snakes[i],
                 body = snake.Body,
@@ -121,16 +122,24 @@
         var Foods = data.Foods.Foods;
         for (var i = Foods.length - 1; i >= 0; i--) {
             var food = Foods[i];
-            drawStrokeRect(food);
+            ctx.fillStyle = 'orange';
+            drawRect(food);
         };
     }
 
+    function setMap(data) {
+        mapW = data.Map.Width;
+        mapH = data.Map.Height;
+        canvasEl.width  =(gap + bodyW)*mapW + gap;
+        canvasEl.style.width = canvasEl.width + "px";
+        canvasEl.height  =(gap + bodyW)*mapH + gap;
+        canvasEl.style.height = canvasEl.height + "px";
+    }
+
+
     // 绘制方格方法
     function drawRect(unit) {
-        ctx.fillRect(unit[0] * bodyW, unit[1] * bodyW, bodyW - 1, bodyW - 1);
-    }
-    function drawStrokeRect(unit) {
-        ctx.strokeRect(unit[0] * bodyW, unit[1] * bodyW, bodyW - 1, bodyW - 1);
+        ctx.fillRect((unit[0]-1) * (bodyW+gap) +gap , (unit[1]-1) * (bodyW+gap) +gap , bodyW, bodyW);
     }
 
 
