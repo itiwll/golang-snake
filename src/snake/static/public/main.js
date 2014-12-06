@@ -1,7 +1,7 @@
 // main.js
 (function() {
     var userid = document.getElementById('userid').innerHTML,
-        bodyW = 4,
+        bodyW = 7,
         gap = 1,
         mapW,
         mapH,
@@ -129,8 +129,8 @@
         var Foods = data.Foods.Foods;
         for (var i = Foods.length - 1; i >= 0; i--) {
             var food = Foods[i];
-            ctx.fillStyle = 'orange';
-            drawRect(food);
+            ctx.strokeStyle = 'orange';
+            drawStrokeRect(food);
         };
     }
 
@@ -147,6 +147,10 @@
     // 绘制方格方法
     function drawRect(unit) {
         ctx.fillRect((unit[0]-1) * (bodyW+gap) +gap , (unit[1]-1) * (bodyW+gap) +gap , bodyW, bodyW);
+    }
+
+    function drawStrokeRect(unit) {
+        ctx.strokeRect((unit[0]-1) * (bodyW+gap) +gap , (unit[1]-1) * (bodyW+gap) +gap , bodyW, bodyW);
     }
 
 

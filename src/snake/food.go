@@ -24,8 +24,8 @@ func (f *fooder) setQuantity(n int) {
 
 func (f *fooder) produceFood(gameMap maper, Snakes []*snake) {
 S:
-	x := randValue(0, gameMap.Width)
-	y := randValue(0, gameMap.Height)
+	x := randValue(1, gameMap.Width)
+	y := randValue(1, gameMap.Height)
 
 	for _, v := range Snakes {
 		for _, vv := range v.Body {

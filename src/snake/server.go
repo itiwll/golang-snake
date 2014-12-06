@@ -30,11 +30,11 @@ var (
 
 func main() {
 
-	gameMap.Width = 100
-	gameMap.Height = 50
+	gameMap.Width = 150
+	gameMap.Height = 100
 
 	config.port = "80"
-	config.tickerTime = 500
+	config.tickerTime = 150
 
 	// 静态文件
 	http.Handle("/public/", http.FileServer(http.Dir("static")))
