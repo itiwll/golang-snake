@@ -1,6 +1,7 @@
 // main.js
 (function() {
-    var bodyW = 4,
+    var userid = document.getElementById('userid').innerHTML,
+        bodyW = 4,
         gap = 1,
         mapW,
         mapH,
@@ -72,12 +73,10 @@
         document.addEventListener('touchend', touchEnd, false);
         function touchStart (event) {
             event.preventDefault();
-            console.log(event)
             startX = event.touches[0].pageX;
             startY = event.touches[0].pageY;
         }
         function touchMove (event) {
-            console.log(event)
             endX = event.touches[0].pageX;
             endY = event.touches[0].pageY;
 
@@ -104,12 +103,20 @@
 
         // 绘制蛇
         var Snakes = data.Snakes;
-        ctx.fillStyle = "#000";
         for (var i = Snakes.length - 1; i >= 0; i--) {
             var snake = Snakes[i],
                 body = snake.Body,
                 name = snake.Name,
-                staust = snake.Status;
+                staust = snake.Staust;
+
+
+            if (name==userid && staust ==1) {
+                ctx.fillStyle = "#000";
+            } else if (staust == 0) {
+                ctx.fillStyle = "#800"
+            } else{
+                ctx.fillStyle = "#666";
+            };
 
             for (var j = body.length - 1; j >= 0; j--) {
                 var unit = body[j];

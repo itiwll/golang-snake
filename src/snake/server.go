@@ -33,7 +33,7 @@ func main() {
 	gameMap.Width = 100
 	gameMap.Height = 50
 
-	config.port = "89"
+	config.port = "80"
 	config.tickerTime = 500
 
 	// 静态文件
