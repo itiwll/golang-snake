@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -36,6 +37,39 @@ var (
 )
 
 func main() {
+	setConfig()
+
+	ip := "localhost"
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		panic(err)
+	}
+	for _, addr := range addrs {
+		if addr.String() != "0.0.0.0" {
+			ip = addr.String()
+		}
+	}
+	fmt.Printf("服务地址：%v:%v\n", ip, config.port)
+
+	// 静态文件
+	http.Handle("/public/", http.FileServer(http.Dir("static")))
+
+	// 动态页面
+	http.HandleFunc("/", homeServer)
+
+	// 数据接口
+	http.HandleFunc("/ws", websocketServer)
+
+	// 游戏服务启动
+	go game()
+
+	// 启动
+	log.Fatal(http.ListenAndServe(":"+config.port, nil))
+
+}
+
+// 设置运行参数
+func setConfig() {
 	config.port = PORT
 	config.tickerTime = TICKERTIME
 	gameMap.Width = MAP_WIDTH
@@ -49,7 +83,7 @@ func main() {
 	fmt.Println("y/n(y)")
 S:
 	fmt.Scanln(&in)
-	if in == "y" {
+	if in == "y" || in == "" {
 		fmt.Println("使用默认配置。")
 	} else if in != "y" && in != "n" {
 		fmt.Println("输入错误")
@@ -116,22 +150,6 @@ S:
 
 		}
 	}
-
-	// 静态文件
-	http.Handle("/public/", http.FileServer(http.Dir("static")))
-
-	// 动态页面
-	http.HandleFunc("/", homeServer)
-
-	// 数据接口
-	http.HandleFunc("/ws", websocketServer)
-
-	// 游戏服务启动
-	go game()
-
-	// 启动
-	log.Fatal(http.ListenAndServe(":"+config.port, nil))
-
 }
 
 // html服务
