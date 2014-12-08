@@ -16,6 +16,13 @@ type maper struct {
 	Height int
 }
 
+const (
+	PORT       = "80"
+	TICKERTIME = 150
+	MAP_WIDTH  = 150
+	MAP_HEIGHT = 80
+)
+
 var (
 	userIds []int
 	Snakes  []*snake                                                      //蛇库
@@ -29,12 +36,86 @@ var (
 )
 
 func main() {
+	config.port = PORT
+	config.tickerTime = TICKERTIME
+	gameMap.Width = MAP_WIDTH
+	gameMap.Height = MAP_HEIGHT
 
-	gameMap.Width = 150
-	gameMap.Height = 100
+	var in string
+	fmt.Println("是否使用默认配置？")
+	fmt.Println("端口：80")
+	fmt.Println("地图宽：150")
+	fmt.Println("地图高：80")
+	fmt.Println("y/n(y)")
+S:
+	fmt.Scanln(&in)
+	if in == "y" {
+		fmt.Println("使用默认配置。")
+	} else if in != "y" && in != "n" {
+		fmt.Println("输入错误")
+		goto S
+	} else {
+		for {
+			fmt.Println("请输入端口(" + PORT + ")：")
+			i, _ := fmt.Scanln(&in)
+			if i == 0 {
+				break
+			}
+			_, err := strconv.Atoi(in)
+			if err != nil {
+				fmt.Println("输入错误")
+			} else {
+				config.port = in
+				break
+			}
 
-	config.port = "80"
-	config.tickerTime = 150
+		}
+		for {
+			fmt.Println("请输入心跳时间(" + strconv.Itoa(TICKERTIME) + ")：")
+			i, _ := fmt.Scanln(&in)
+			if i == 0 {
+				break
+			}
+			v, err := strconv.Atoi(in)
+			if err != nil {
+				fmt.Println("输入错误")
+			} else {
+				config.tickerTime = v
+				break
+			}
+		}
+
+		for {
+			fmt.Println("请输入地图宽度(" + strconv.Itoa(MAP_WIDTH) + ")：")
+			i, _ := fmt.Scanln(&in)
+			if i == 0 {
+				break
+			}
+			v, err := strconv.Atoi(in)
+			if err != nil {
+				fmt.Println("输入错误")
+			} else {
+				gameMap.Width = v
+				break
+			}
+
+		}
+		for {
+			fmt.Println("请输入地图高度(" + strconv.Itoa(MAP_HEIGHT) + ")：")
+			i, _ := fmt.Scanln(&in)
+			if i == 0 {
+				break
+			}
+			v, err := strconv.Atoi(in)
+			if err != nil {
+				fmt.Println("输入错误")
+			} else {
+				gameMap.Height = v
+				break
+			}
+
+		}
+	}
 
 	// 静态文件
 	http.Handle("/public/", http.FileServer(http.Dir("static")))
