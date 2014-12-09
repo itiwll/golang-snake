@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	userIds []int
+	users   []user                                                        //用户库
 	Snakes  []*snake                                                      //蛇库
 	conns   map[string]*websocket.Conn = make(map[string]*websocket.Conn) //连接库
 	foods   fooder                                                        //食物库
@@ -155,50 +155,22 @@ S:
 // html服务
 func homeServer(rw http.ResponseWriter, req *http.Request) {
 
-	cookitUserId, _ := req.Cookie("userId")
+	user := newUser()
 
-	// 是否新玩家
-	newUser := true
-	if cookitUserId == nil {
-		newUser = true
-	} else {
-		// 遍历用户表
-		for _, v := range userIds {
-			if strconv.Itoa(v) == cookitUserId.Value {
-				newUser = false
-				break
-			} else {
-				newUser = true
-			}
-		}
+	cookitUserId := &http.Cookie{
+		Name:  "userId",
+		Value: strconv.Itoa(user.id),
 	}
+	http.SetCookie(rw, cookitUserId) //设置cookit
 
-	if newUser {
-		// 新用户
-		id := len(userIds)
-		fmt.Println("新用户id：" + strconv.Itoa(id))
-		cookitUserId = &http.Cookie{
-			Name:  "userId",
-			Value: strconv.Itoa(id),
-		}
-		http.SetCookie(rw, cookitUserId) //设置cookit
+	// user库更新
+	users = append(users, user)
 
-		// id库更新
-		userIds = append(userIds, id)
+	// 分配新snake
+	// userSnake := newSnake()
+	// 蛇库更新
+	// Snakes = append(Snakes, &userSnake)
 
-		// 分配新snake
-		userSnake := snake{
-			cookitUserId.Value,
-			[][2]int{{1, 1}, {1, 2}, {1, 3}},
-			3,
-			3,
-			1,
-		}
-		// 蛇库更新
-		Snakes = append(Snakes, &userSnake)
-	}
-
-	fmt.Println("用户访问，ID：" + cookitUserId.Value)
 	tp, _ := template.ParseFiles("home.html")
 	tp.Execute(rw, cookitUserId.Value)
 }
@@ -233,7 +205,8 @@ func websocketServer(rw http.ResponseWriter, req *http.Request) {
 			switch string(p) {
 			case "getMap": // 地图请求
 				writerMap(conn)
-
+			case "newSnake": // 新蛇请求
+				// newSnake(req)
 			case "1", "2", "3", "4": // 移动请求
 				fmt.Println("收到操作 id:" + cookit.Value + ";value:" + string(p))
 				i, _ := strconv.Atoi(cookit.Value)

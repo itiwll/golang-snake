@@ -13,13 +13,7 @@ import (
 )
 
 var (
-	s = snake{
-		"snake",
-		[][2]int{{1, 1}, {1, 2}, {1, 3}, {2, 3}},
-		3,
-		4,
-		1,
-	}
+	s    = newSnake()
 	food = fooder{[][2]int{{2, 4}, {1, 6}}, 1}
 )
 

@@ -11,8 +11,11 @@ import (
 	"fmt"
 )
 
+var snakeId int = 0
+
 type snake struct {
-	Name     string   //名字
+	Name     string //名字
+	Id       int
 	Body     [][2]int //身体
 	length   int      //长度
 	direcion int      //方向
@@ -77,4 +80,17 @@ D:
 // 死掉
 func (s *snake) die() {
 	s.Staust = 0
+}
+
+func newSnake() (s snake) {
+	s = snake{
+		"",
+		snakeId,
+		[][2]int{{1, 1}, {1, 2}, {1, 3}},
+		3,
+		3,
+		1,
+	}
+	snakeId++
+	return
 }
