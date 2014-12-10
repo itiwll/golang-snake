@@ -25,12 +25,12 @@ const (
 )
 
 var (
-	users   []user                                                        //用户库
-	Snakes  []*snake                                                      //蛇库
-	conns   map[string]*websocket.Conn = make(map[string]*websocket.Conn) //连接库
-	foods   fooder                                                        //食物库
-	gameMap maper                                                         // 地图
-	config  struct {                   // 设置
+	users   []user            //用户库
+	Snakes  []*snake          //蛇库
+	conns   []*websocket.Conn //连接库
+	foods   fooder            //食物库
+	gameMap maper             // 地图
+	config  struct {          // 设置
 		port       string
 		tickerTime int
 	}
@@ -166,11 +166,6 @@ func homeServer(rw http.ResponseWriter, req *http.Request) {
 	// user库更新
 	users = append(users, user)
 
-	// 分配新snake
-	// userSnake := newSnake()
-	// 蛇库更新
-	// Snakes = append(Snakes, &userSnake)
-
 	tp, _ := template.ParseFiles("home.html")
 	tp.Execute(rw, cookitUserId.Value)
 }
@@ -179,24 +174,33 @@ func homeServer(rw http.ResponseWriter, req *http.Request) {
 func websocketServer(rw http.ResponseWriter, req *http.Request) {
 	cookit, _ := req.Cookie("userId")
 	uid, _ := strconv.Atoi(cookit.Value)
+
+	var u user
+	for _, u = range users {
+		if u.id == uid {
+			break
+		}
+	}
+
+	// fmt.Println(u)
+
 	ug := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024}
 	conn, _ := ug.Upgrade(rw, req, nil)
 	defer fmt.Println("用户" + cookit.Value + "断开连接")
 	defer conn.Close()
-	defer Snakes[uid].die()
 	if conn != nil {
 		fmt.Println("建立一个websockit连接")
 		fmt.Println("存入连接库")
-		conns[cookit.Value] = conn //存连接
+		u.conn = conn //存连接
 	}
 
 	// 接收操作
 	for {
-		t, p, err := conn.ReadMessage()
+		t, p, err := u.conn.ReadMessage()
 		if err != nil {
-			delete(conns, cookit.Value)
+			u.conn = nil
 			return
 		}
 		fmt.Println("读取")
@@ -205,8 +209,9 @@ func websocketServer(rw http.ResponseWriter, req *http.Request) {
 			switch string(p) {
 			case "getMap": // 地图请求
 				writerMap(conn)
-			case "newSnake": // 新蛇请求
-				// newSnake(req)
+			case "newSnake": // 新蛇请求 加入游戏
+				// todo
+				u.newSnake()
 			case "1", "2", "3", "4": // 移动请求
 				fmt.Println("收到操作 id:" + cookit.Value + ";value:" + string(p))
 				i, _ := strconv.Atoi(cookit.Value)

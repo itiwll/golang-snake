@@ -82,8 +82,8 @@ func (s *snake) die() {
 	s.Staust = 0
 }
 
-func newSnake() (s snake) {
-	s = snake{
+func newSnake() (s *snake) {
+	s = &snake{
 		"",
 		snakeId,
 		[][2]int{{1, 1}, {1, 2}, {1, 3}},
