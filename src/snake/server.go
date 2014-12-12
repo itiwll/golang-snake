@@ -283,6 +283,7 @@ func collide(Snakes []*snake) {
 
 // 写到客户端 蛇库和食物库
 func writerSnakeFood() {
+	reSnakes()
 	var json struct {
 		Type   string
 		Snakes []*snake
@@ -307,4 +308,15 @@ func writerMap(c *websocket.Conn) {
 	json.Type = "map"
 	json.Map = gameMap
 	c.WriteJSON(json)
+}
+
+// 更新蛇库
+
+func reSnakes() {
+	Snakes = nil
+	for _, u := range users {
+		if u.snake != nil {
+			Snakes = append(Snakes, u.snake)
+		}
+	}
 }

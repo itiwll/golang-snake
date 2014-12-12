@@ -12,8 +12,9 @@ type user struct {
 	conn  *websocket.Conn
 }
 
-func (u *user) newSnake() {
-	u.snake = newSnake()
+func (u *user) newSnake()(s *snake) {
+	s = u.snake = newSnake()
+    return
 }
 
 func newUser() (u user) {
